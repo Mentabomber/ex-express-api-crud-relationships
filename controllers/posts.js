@@ -20,6 +20,11 @@ async function store(req, res){
             connect: {
                 id: creationData.postId
             }
+        },
+        tags:{
+            connect: creationData.tags.map((idTag) => ({
+            id: idTag,
+        }))
         }
     },
     include: {

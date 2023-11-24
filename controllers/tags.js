@@ -6,7 +6,7 @@ async function store(req, res){
 
   const newTag = await prisma.tag.create({
     data: {
-      name: inputData.type,
+      type: inputData.type,
     }
   })
 
