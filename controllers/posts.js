@@ -18,7 +18,7 @@ async function store(req, res){
         published:creationData.published,
         category: {
             connect: {
-                id: creationData.postId
+                id: creationData.categoryId
             }
         },
         tags:{
@@ -26,10 +26,7 @@ async function store(req, res){
             id: idTag,
         }))
         }
-    },
-    include: {
-        post: true,
-      }
+    }
     })
     .then((newPost) => {
     console.log("Nuovo post creato:", newPost);
@@ -42,13 +39,20 @@ async function store(req, res){
 
 async function show(req, res){
 
-    const showInputData = undefined;
-
+    const showInputData = req.params;
     const showPost = await prisma.post
     .findUnique({
         where: {
-            slug: showInputData,
+            slug: showInputData.slug,
         },
+        include: {
+            tags: {
+                select: {
+                    type: true,
+                },
+            },
+            category: true,
+        }
 
     });
     if (!showPost) {
@@ -64,11 +68,17 @@ async function showAll(req, res){
     console.log(dataFilter.content);
     if (dataFilter === "") {
         const showAllPosts = await prisma.post
-        .findMany()
-        .then((showAllPosts) => {
-        console.log("Tutti i posts:", showAllPosts);
+        .findMany({
+            include: {
+                tags: {
+                    select: {
+                        type: true,
+                    },
+                },
+                category: true,
+            }
         })
-        .catch((error) => console.error(error));
+        
 
         return res.json(showAllPosts);
     }else if(dataFilter.hasOwnProperty("published")){
@@ -76,12 +86,18 @@ async function showAll(req, res){
         .findMany({
             where: {
                 published: dataFilter.published
+            },
+            include: {
+                tags: {
+                    select: {
+                        type: true,
+                    },
+                },
+                category: true,
             }
+            
         })
-        .then((showAllPosts) => {
-        console.log("Tutti i posts con filter published:" , showAllPosts);
-        })
-        .catch((error) => console.error(error));
+      
 
         return res.json(showAllPosts);
     }else if(dataFilter.hasOwnProperty("content")){
@@ -89,12 +105,18 @@ async function showAll(req, res){
         .findMany({
             where: {
                 content: { contains: dataFilter.content }
+            },
+            include: {
+                tags: {
+                    select: {
+                        type: true,
+                    },
+                },
+                category: true,
             }
+            
         })
-        .then((showAllPosts) => {
-        console.log("Tutti i posts con filter :" + dataFilter.content + showAllPosts);
-        })
-        .catch((error) => console.error(error));
+   
 
         return res.json(showAllPosts);
     }
